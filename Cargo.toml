@@ -1,0 +1,18 @@
+[package]
+name = "xion-contract"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+thiserror = "1"
+url = "2.5.2"
+cosmwasm-std = { version = "2.1.1", features = ["stargate", "cosmwasm_2_0"] }
+cosmwasm-schema = "2.1.1"
+cosmos-sdk-proto = {git = "https://github.com/burnt-labs/cosmos-rust.git", rev = "75e72f446629f98330e209e2f6268250d325cccb", default-features = false, features = ["std", "cosmwasm", "xion", "serde"]}
+cw2 = "2.0.0"
+cw20 = "2.0.0"
+cw-storage-plus = "2.0.0"
+cw-utils = "2.0.0"
