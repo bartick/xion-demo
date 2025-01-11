@@ -37,6 +37,7 @@ pub fn query(
     match msg {
         QueryMsg::Admin {  } => to_json_binary(&query::admin(deps.storage)?),
         QueryMsg::Winner {  } => to_json_binary(&query::winner(deps.storage)?),
-        QueryMsg::LotteryBalance {  } => to_json_binary(&query::lottery_balance(deps, env)?)
+        QueryMsg::LotteryBalance {  } => to_json_binary(&query::lottery_balance(deps, env)?),
+        QueryMsg::TotalParticipants {  } => to_json_binary(&query::total_participants(deps.storage)?),
     }
 }

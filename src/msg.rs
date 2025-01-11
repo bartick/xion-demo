@@ -24,4 +24,6 @@ pub enum QueryMsg {
     Winner {},
     #[returns(cosmwasm_std::Binary)]
     LotteryBalance {},
+    #[returns(cosmwasm_std::Binary)]
+    TotalParticipants {},
 }
