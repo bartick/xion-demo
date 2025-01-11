@@ -1,7 +1,7 @@
 use cosmwasm_std::{Addr, DepsMut, Event, MessageInfo, Response};
 use rand::seq::SliceRandom;
 
-use crate::{error::{ContractError::{AlreadyRegistered, Unauthorized}, ContractResult}, state::{ADMIN, LOTTERY, WINNER}};
+use crate::{error::{ContractError::{AlreadyRegistered, Unauthorized, LotteryNotStarted, LotteryAlreadyStarted}, ContractResult}, state::{ADMIN, LOTTERY, START, WINNER}};
 
 
 pub fn init(
@@ -44,10 +44,39 @@ pub fn update_admin(
     ))
 }
 
+pub fn start_lottery(
+    deps: DepsMut,
+    info: MessageInfo,
+) -> ContractResult<Response> {
+    let admin = ADMIN.load(deps.storage)?;
+    if admin != info.sender {
+        return Err(Unauthorized);
+    }
+
+    let started = START.load(deps.storage)?;
+    if started == true {
+        return Err(LotteryAlreadyStarted);
+    }
+
+    START.save(deps.storage, &true)?;
+    LOTTERY.save(deps.storage, &Vec::new())?;
+    WINNER.save(deps.storage, &Addr::unchecked("")).unwrap();
+
+    Ok(Response::new().add_event(
+        Event::new("start_lottery").add_attributes(vec![
+            ("admin", admin.into_string()),
+        ])
+    ))
+}
+
 pub fn add_person_to_lottery(
     deps: DepsMut,
     info: MessageInfo,
 ) -> ContractResult<Response> {
+
+    if START.load(deps.storage)? == false {
+        return Err(LotteryNotStarted);
+    }
 
     let total_registered = LOTTERY.load(deps.storage)?;
 
@@ -76,11 +105,19 @@ pub fn pick_winner(
         return Err(Unauthorized);
     }
 
+    let started = START.load(deps.storage)?;
+
+    if started == false {
+        return Err(LotteryNotStarted);
+    }
+
     let total_registered = LOTTERY.load(deps.storage)?;
 
     let winner = total_registered.choose(&mut rand::thread_rng()).unwrap();
 
     WINNER.save(deps.storage, winner)?;
+
+    START.save(deps.storage, &false)?;
 
     Ok(Response::new().add_event(
         Event::new("pick_winner").add_attributes(vec![
