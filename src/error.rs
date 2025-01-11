@@ -32,6 +32,9 @@ pub enum ContractError {
 
     #[error("unauthorized")]
     Unauthorized,
+
+    #[error("already registered")]
+    AlreadyRegistered,
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;

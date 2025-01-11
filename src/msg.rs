@@ -11,6 +11,8 @@ pub enum ExecuteMsg {
     UpdateAdmin {
         new_admin: Addr,
     },
+    JoinLottery {},
+    PickWinner {},
 }
 
 #[cw_serde]
@@ -18,4 +20,6 @@ pub enum ExecuteMsg {
 pub enum QueryMsg {
     #[returns(cosmwasm_std::Binary)]
     Admin {},
+    #[returns(cosmwasm_std::Binary)]
+    Winner {},
 }

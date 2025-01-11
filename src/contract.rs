@@ -1,6 +1,6 @@
 use cosmwasm_std::{entry_point, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
-use crate::{error::ContractResult, execute, msg::{ExecuteMsg, InstantiateMsg, QueryMsg}, query::admin, CONTRACT_NAME, CONTRACT_VERSION};
+use crate::{error::ContractResult, execute, msg::{ExecuteMsg, InstantiateMsg, QueryMsg}, query, CONTRACT_NAME, CONTRACT_VERSION};
 
 
 #[entry_point]
@@ -22,7 +22,9 @@ pub fn execute(
     msg: ExecuteMsg
 ) -> ContractResult<Response> {
     match msg {
-        ExecuteMsg::UpdateAdmin { new_admin } => execute::update_admin(deps, info, new_admin)
+        ExecuteMsg::UpdateAdmin { new_admin } => execute::update_admin(deps, info, new_admin),
+        ExecuteMsg::JoinLottery {  } => execute::add_person_to_lottery(deps, info),
+        ExecuteMsg::PickWinner {  } => execute::pick_winner(deps, info)
     }
 }
 
@@ -33,6 +35,7 @@ pub fn query(
     msg: QueryMsg
 ) -> StdResult<Binary> {
     match msg {
-        QueryMsg::Admin {  } => to_json_binary(&admin(deps.storage)?)
+        QueryMsg::Admin {  } => to_json_binary(&query::admin(deps.storage)?),
+        QueryMsg::Winner {  } => to_json_binary(&query::winner(deps.storage)?)
     }
 }
