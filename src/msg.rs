@@ -11,6 +11,7 @@ pub enum ExecuteMsg {
     UpdateAdmin {
         new_admin: Addr,
     },
+    StartLottery {},
     JoinLottery {},
     PickWinner {},
 }

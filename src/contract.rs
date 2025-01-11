@@ -23,6 +23,7 @@ pub fn execute(
 ) -> ContractResult<Response> {
     match msg {
         ExecuteMsg::UpdateAdmin { new_admin } => execute::update_admin(deps, info, new_admin),
+        ExecuteMsg::StartLottery {  } => execute::start_lottery(deps, info),
         ExecuteMsg::JoinLottery {  } => execute::add_person_to_lottery(deps, info),
         ExecuteMsg::PickWinner {  } => execute::pick_winner(deps, env, info)
     }

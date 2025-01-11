@@ -1,5 +1,4 @@
 use cosmwasm_std::{coins, Addr, BankMsg, CosmosMsg, DepsMut, Empty, Env, Event, MessageInfo, Response, Uint128};
-use rand::seq::SliceRandom;
 
 use crate::{error::{ContractError::{AlreadyRegistered, LotteryAlreadyStarted, LotteryNotStarted, Unauthorized, NotEnoughFunds}, ContractResult}, state::{ADMIN, LOTTERY, START, WINNER}};
 
@@ -15,6 +14,9 @@ pub fn init(
         None => info.sender,
     };
     ADMIN.save(deps.storage, &hello_world_admin)?;
+    START.save(deps.storage, &false)?;
+    LOTTERY.save(deps.storage, &Vec::new())?;
+    WINNER.save(deps.storage, &Addr::unchecked("")).unwrap();
 
 
     Ok(Response::new().add_event(
@@ -112,6 +114,22 @@ pub fn add_person_to_lottery(
     ))
 }
 
+fn generate_random_number(env_time: u64, start: u32, end: u32) -> u32 {
+    // Ensure the range is valid
+    assert!(start < end, "Invalid range: start should be less than end.");
+
+    // Use env_time as a seed-like input
+    let a: u64 = 1664525;
+    let c: u64 = 1013904223;
+    let m: u64 = u32::MAX as u64;
+
+    // Generate a pseudo-random number
+    let random = (a.wrapping_mul(env_time).wrapping_add(c)) % m;
+
+    // Map the random number to the desired range [start, end)
+    start + (random as u32 % (end - start))
+}
+
 pub fn pick_winner(
     deps: DepsMut,
     env: Env,
@@ -130,19 +148,21 @@ pub fn pick_winner(
 
     let total_registered = LOTTERY.load(deps.storage)?;
 
-    let winner = total_registered.choose(&mut rand::thread_rng()).unwrap();
+    let random_number = generate_random_number(env.block.height, 0, total_registered.len() as u32);
 
-    WINNER.save(deps.storage, winner)?;
+    let winner = total_registered[random_number as usize].clone();
+
+    WINNER.save(deps.storage, &winner)?;
 
     START.save(deps.storage, &false)?;
 
     let contract_balance = deps.querier.query_balance(env.contract.address, "uxion")?.amount;
 
-    CosmosMsg::<Empty>::Bank(BankMsg::Send { to_address: winner.to_string(), amount: coins(contract_balance.u128(), "uxion") });
+    let send_msg = CosmosMsg::<Empty>::Bank(BankMsg::Send { to_address: winner.to_string(), amount: coins(contract_balance.u128(), "uxion") });
 
     Ok(Response::new().add_event(
         Event::new("pick_winner").add_attributes(vec![
             ("winner", winner.clone().into_string()),
         ])
-    ))
+    ).add_message(send_msg))
 }
