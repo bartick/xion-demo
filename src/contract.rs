@@ -40,5 +40,6 @@ pub fn query(
         QueryMsg::Winner {  } => to_json_binary(&query::winner(deps.storage)?),
         QueryMsg::LotteryBalance {  } => to_json_binary(&query::lottery_balance(deps, env)?),
         QueryMsg::TotalParticipants {  } => to_json_binary(&query::total_participants(deps.storage)?),
+        QueryMsg::LotteryStarted {  } => to_json_binary(&query::is_lottery_started(deps.storage)?)
     }
 }
