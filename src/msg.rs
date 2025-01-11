@@ -22,4 +22,6 @@ pub enum QueryMsg {
     Admin {},
     #[returns(cosmwasm_std::Binary)]
     Winner {},
+    #[returns(cosmwasm_std::Binary)]
+    LotteryBalance {},
 }

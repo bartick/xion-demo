@@ -31,11 +31,12 @@ pub fn execute(
 #[entry_point]
 pub fn query(
     deps: Deps,
-    _env: Env,
+    env: Env,
     msg: QueryMsg
 ) -> StdResult<Binary> {
     match msg {
         QueryMsg::Admin {  } => to_json_binary(&query::admin(deps.storage)?),
-        QueryMsg::Winner {  } => to_json_binary(&query::winner(deps.storage)?)
+        QueryMsg::Winner {  } => to_json_binary(&query::winner(deps.storage)?),
+        QueryMsg::LotteryBalance {  } => to_json_binary(&query::lottery_balance(deps, env)?)
     }
 }
