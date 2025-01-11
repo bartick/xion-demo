@@ -41,6 +41,9 @@ pub enum ContractError {
 
     #[error("lottery already started")]
     LotteryAlreadyStarted,
+
+    #[error("not enough funds")]
+    NotEnoughFunds,
 }
 
 pub type ContractResult<T> = Result<T, ContractError>;

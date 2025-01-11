@@ -1,7 +1,7 @@
-use cosmwasm_std::{Addr, DepsMut, Event, MessageInfo, Response};
+use cosmwasm_std::{coins, Addr, BankMsg, CosmosMsg, DepsMut, Empty, Env, Event, MessageInfo, Response, Uint128};
 use rand::seq::SliceRandom;
 
-use crate::{error::{ContractError::{AlreadyRegistered, Unauthorized, LotteryNotStarted, LotteryAlreadyStarted}, ContractResult}, state::{ADMIN, LOTTERY, START, WINNER}};
+use crate::{error::{ContractError::{AlreadyRegistered, LotteryAlreadyStarted, LotteryNotStarted, Unauthorized, NotEnoughFunds}, ContractResult}, state::{ADMIN, LOTTERY, START, WINNER}};
 
 
 pub fn init(
@@ -84,6 +84,22 @@ pub fn add_person_to_lottery(
         return Err(AlreadyRegistered);
     }
 
+    let sent_funds = info
+        .funds
+        .iter()
+        .find_map(|v| {
+            if v.denom == "uxion" {
+                Some(v.amount)
+            } else {
+                None
+            }
+        })
+        .unwrap_or_else(Uint128::zero);
+
+    if sent_funds == Uint128::zero() {
+        return Err(NotEnoughFunds);
+    }
+
     LOTTERY.update(deps.storage, |mut lottery| -> Result<_, cosmwasm_std::StdError> {
         lottery.push(info.sender.clone());
         Ok(lottery)
@@ -98,6 +114,7 @@ pub fn add_person_to_lottery(
 
 pub fn pick_winner(
     deps: DepsMut,
+    env: Env,
     info: MessageInfo,
 ) -> ContractResult<Response> {
     let admin = ADMIN.load(deps.storage)?;
@@ -118,6 +135,10 @@ pub fn pick_winner(
     WINNER.save(deps.storage, winner)?;
 
     START.save(deps.storage, &false)?;
+
+    let contract_balance = deps.querier.query_balance(env.contract.address, "uxion")?.amount;
+
+    CosmosMsg::<Empty>::Bank(BankMsg::Send { to_address: winner.to_string(), amount: coins(contract_balance.u128(), "uxion") });
 
     Ok(Response::new().add_event(
         Event::new("pick_winner").add_attributes(vec![

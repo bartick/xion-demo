@@ -17,14 +17,14 @@ pub fn instantiate(
 #[entry_point]
 pub fn execute(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: ExecuteMsg
 ) -> ContractResult<Response> {
     match msg {
         ExecuteMsg::UpdateAdmin { new_admin } => execute::update_admin(deps, info, new_admin),
         ExecuteMsg::JoinLottery {  } => execute::add_person_to_lottery(deps, info),
-        ExecuteMsg::PickWinner {  } => execute::pick_winner(deps, info)
+        ExecuteMsg::PickWinner {  } => execute::pick_winner(deps, env, info)
     }
 }
 
