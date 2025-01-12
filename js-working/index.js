@@ -32,10 +32,26 @@ async function uploadCode() {
 
     const codeId = uploadAdmin.codeId;
     console.log("Code ID:", codeId);
+
+    return codeId;
   } catch (error) {
     console.error("Error uploading contract:", error.message);
   }
 }
 
+async function instantiateContract() {
+  const codeId = await uploadCode();
+  const instMsg = { admin: account.address };
+
+  const insReply = await client.instantiate(
+    account.address,
+    codeId,
+    instMsg,
+    "My Xion Token",
+    "auto"
+  );
+
+  console.log("Contract address:", insReply.contractAddress);
+}
+await instantiateContract();
 // Call the uploadCode function
-await uploadCode();
